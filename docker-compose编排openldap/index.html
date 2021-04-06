@@ -1,0 +1,64 @@
+<!doctype html><html xmlns=http://www.w3.org/1999/xhtml xml:lang=zh-cn lang=zh-cn><head><link href=https://gmpg.org/xfn/11 rel=profile><meta charset=utf-8><meta name=generator content="Hugo 0.82.0"><meta name=viewport content="width=device-width,initial-scale=1"><title>docker-compose编排openldap &#183; 禅剑一如</title><meta name=description content><link type=text/css rel=stylesheet href=https://516249940python.github.io/css/print.css media=print><link type=text/css rel=stylesheet href=https://516249940python.github.io/css/poole.css><link type=text/css rel=stylesheet href=https://516249940python.github.io/css/syntax.css><link type=text/css rel=stylesheet href=https://516249940python.github.io/css/hyde.css><link rel=stylesheet href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700"><link rel=apple-touch-icon-precomposed sizes=144x144 href=/apple-touch-icon-144-precomposed.png><link rel="shortcut icon" href=/favicon.png></head><body><aside class=sidebar><div class="container sidebar-sticky"><div class=sidebar-about><a href=https://516249940python.github.io/><h1>禅剑一如</h1></a><p class=lead>An elegant open source and mobile first theme for <a href=http://hugo.spf13.com>hugo</a> made by <a href=http://twitter.com/mdo>@mdo</a>. Originally made for Jekyll.</p></div><nav><ul class=sidebar-nav><li><a href=https://516249940python.github.io/>Home</a></li><li><a href=/post/>post</a></li></ul></nav><p>&copy; 2021. All rights reserved.</p></div></aside><main class="content container"><div class=post><h1>docker-compose编排openldap</h1><time datetime=2021-03-29T23:52:59+0800 class=post-date>Mon, Mar 29, 2021</time><p>统一认证 openldap
+gitlab cicd</p><p>ldapadminphp</p><p>gitlab</p><p>yapi</p><p>zentao/tapd</p><p>宝塔</p><p>docker-compose.yaml</p><pre><code>
+version: '2'
+services:
+  openldap:
+    image: osixia/openldap:1.5.0
+    container_name: openldap
+    environment:
+      LDAP_LOG_LEVEL: &quot;256&quot;
+      LDAP_ORGANISATION: &quot;abc Inc.&quot;
+      LDAP_DOMAIN: &quot;abc.com&quot;
+      LDAP_BASE_DN: &quot;&quot;
+      LDAP_ADMIN_PASSWORD: &quot;xxxxxxxxxxxxxxxx&quot;
+      LDAP_CONFIG_PASSWORD: &quot;config&quot;
+      LDAP_READONLY_USER: &quot;false&quot;
+      #LDAP_READONLY_USER_USERNAME: &quot;readonly&quot;
+      #LDAP_READONLY_USER_PASSWORD: &quot;readonly&quot;
+      LDAP_RFC2307BIS_SCHEMA: &quot;false&quot;
+      LDAP_BACKEND: &quot;mdb&quot;
+      #LDAP_TLS: &quot;false&quot;
+      #LDAP_TLS_CRT_FILENAME: &quot;ldap.crt&quot;
+      #LDAP_TLS_KEY_FILENAME: &quot;ldap.key&quot;
+      #LDAP_TLS_DH_PARAM_FILENAME: &quot;dhparam.pem&quot;
+      #LDAP_TLS_CA_CRT_FILENAME: &quot;ca.crt&quot;
+      #LDAP_TLS_ENFORCE: &quot;false&quot;
+      #LDAP_TLS_CIPHER_SUITE: &quot;SECURE256:-VERS-SSL3.0&quot;
+      #LDAP_TLS_VERIFY_CLIENT: &quot;demand&quot;
+      LDAP_REPLICATION: &quot;false&quot;
+      #LDAP_REPLICATION_CONFIG_SYNCPROV: 'binddn=&quot;cn=admin,cn=config&quot; bindmethod=simple credentials=&quot;$$LDAP_CONFIG_PASSWORD&quot; searchbase=&quot;cn=config&quot; type=refreshAndPersist retry=&quot;60 +&quot; timeout=1 starttls=critical'
+      #LDAP_REPLICATION_DB_SYNCPROV: 'binddn=&quot;cn=admin,$$LDAP_BASE_DN&quot; bindmethod=simple credentials=&quot;$$LDAP_ADMIN_PASSWORD&quot; searchbase=&quot;$$LDAP_BASE_DN&quot; type=refreshAndPersist interval=00:00:00:10 retry=&quot;60 +&quot; timeout=1 starttls=critical'
+      #LDAP_REPLICATION_HOSTS: &quot;#PYTHON2BASH:['ldap://ldap.example.org','ldap://ldap2.example.org']&quot;
+      KEEP_EXISTING_CONFIG: &quot;false&quot;
+      LDAP_REMOVE_CONFIG_AFTER_SETUP: &quot;true&quot;
+      #LDAP_SSL_HELPER_PREFIX: &quot;ldap&quot;
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./data/ldap:/var/lib/ldap
+      - ./data/slapd.d:/etc/ldap/slapd.d
+      - ./data/certs:/container/service/slapd/assets/certs/
+    ports:
+      - &quot;389:389&quot;
+      - &quot;636:636&quot;
+    # For replication to work correctly, domainname and hostname must be
+    # set correctly so that &quot;hostname&quot;.&quot;domainname&quot; equates to the
+    # fully-qualified domain name for the host.
+    domainname: &quot;abc.com&quot;
+    hostname: &quot;ldap-server&quot;
+  phpldapadmin:
+    image: osixia/phpldapadmin:latest
+    container_name: phpldapadmin
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: &quot;openldap&quot;
+      PHPLDAPADMIN_HTTPS: &quot;false&quot;
+    ports:
+      - &quot;8080:80&quot;
+    depends_on:
+      - openldap
+
+        #volumes:
+        #  ldap_storge:
+        #    driver: local       
+
+</code></pre></div></main></body></html>
